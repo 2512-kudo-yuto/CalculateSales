@@ -53,42 +53,46 @@ public class CalculateSales {
 
 		// ※ここから集計処理を作成してください。(処理内容2-1、2-2)
 
-		//listFilesを使⽤してfilesという配列に、 
+		//listFilesを使⽤してfilesという配列に、
 		//指定したパスに存在する全てのファイル(または、ディレクトリ)の情報を格納します。
-		try {
-			File[] files = new File(args[0]).listFiles();
-			if (files == null) {
-				System.out.println(UNKNOWN_ERROR);
+
+		File[] files = new File(args[0]).listFiles();
+		if (files == null) {
+			System.out.println(UNKNOWN_ERROR);
+			return;
+		}
+		//先にファイルの情報を格納する List(ArrayList) を宣⾔します。
+		List<File> rcdFiles = new ArrayList<>();
+
+		//filesの数だけ繰り返すことで、
+		//指定したパスに存在する全てのファイル(または、ディレクトリ)の数だけ繰り返されます。
+		for (int i = 0; i < files.length; i++) {
+			if (files[i].isFile() && files[i].getName().matches("^\\d{8}\\.rcd$")) {
+				// 売上ファイルの条件に当てはまったものだけ、List(ArrayList) に追加します。
+				rcdFiles.add(files[i]);
+			}
+		}
+
+		// 追加：売上ファイルをファイル名の昇順にソート
+		Collections.sort(rcdFiles);
+
+		//  売上ファイルの連番チェック
+		for (int i = 0; i < rcdFiles.size(); i++) {
+			String fileName = rcdFiles.get(i).getName();
+			int fileNo = Integer.parseInt(fileName.substring(0, 8));
+			if (fileNo != i + 1) {
+				System.out.println(SALESFILE_NOT_SEQUENTIAL);
 				return;
 			}
-			//先にファイルの情報を格納する List(ArrayList) を宣⾔します。
-			List<File> rcdFiles = new ArrayList<>();
+		}
 
-			//filesの数だけ繰り返すことで、 
-			//指定したパスに存在する全てのファイル(または、ディレクトリ)の数だけ繰り返されます。 
-			for (int i = 0; i < files.length; i++) {
-				if (files[i].isFile() && files[i].getName().matches("^\\d{8}\\.rcd$")) {
-					// 売上ファイルの条件に当てはまったものだけ、List(ArrayList) に追加します。
-					rcdFiles.add(files[i]);
-				}
-			}
+		//rcdFilesに複数の売上ファイルの情報を格納しているので、その数だけ繰り返します。
+		for (int i = 0; i < rcdFiles.size(); i++) {
+			BufferedReader br = null;
+			String fileName = rcdFiles.get(i).getName();
 
-			// 追加：売上ファイルをファイル名の昇順にソート
-			Collections.sort(rcdFiles);
-
-			//  売上ファイルの連番チェック
-			for (int i = 0; i < rcdFiles.size(); i++) {
-				int fileNo = Integer.parseInt(rcdFiles.get(i).getName().substring(0, 8));
-				if (fileNo != i + 1) {
-					System.out.println(SALESFILE_NOT_SEQUENTIAL);
-					return;
-				}
-			}
-
-			//rcdFilesに複数の売上ファイルの情報を格納しているので、その数だけ繰り返します。
-			for (int i = 0; i < rcdFiles.size(); i++) {
-
-				BufferedReader br = new BufferedReader(new FileReader(rcdFiles.get(i)));
+			try {
+				br = new BufferedReader(new FileReader(rcdFiles.get(i)));
 
 				// 売上ファイルの中身（1行目: 支店コード、2行目: 売上金額）を保持するList
 				List<String> fileContents = new ArrayList<>();
@@ -97,11 +101,10 @@ public class CalculateSales {
 				while ((line = br.readLine()) != null) {
 					fileContents.add(line);
 				}
-				br.close();
 
 				// 2-4. 売上ファイルの中身が2行ではない場合
 				if (fileContents.size() != 2) {
-					System.out.println(rcdFiles.get(i).getName() + SALESFILE_INVALID_FORMAT);
+					System.out.println(fileName + SALESFILE_INVALID_FORMAT);
 					return;
 				}
 
@@ -111,7 +114,7 @@ public class CalculateSales {
 
 				// 2-3. 支店コードが支店定義ファイルに該当しなかった場合
 				if (!branchNames.containsKey(branchCode)) {
-					System.out.println(rcdFiles.get(i).getName() + CODE_INVALID_FORMAT);
+					System.out.println(fileName + CODE_INVALID_FORMAT);
 					return;
 				}
 
@@ -136,10 +139,20 @@ public class CalculateSales {
 
 				// 加算した売上金額をMapに更新
 				branchSales.put(branchCode, saleAmount);
+
+			} catch (IOException e) {
+				System.out.println(UNKNOWN_ERROR);
+				return;
+			} finally {
+				if (br != null) {
+					try {
+						br.close();
+					} catch (IOException e) {
+						System.out.println(UNKNOWN_ERROR);
+						return;
+					}
+				}
 			}
-		} catch (IOException e) {
-			System.out.println(UNKNOWN_ERROR);
-			return;
 		}
 
 		// 支店別集計ファイル書き込み処理
@@ -180,7 +193,7 @@ public class CalculateSales {
 				String[] items = line.split(",");
 
 				// 支店定義ファイルのフォーマットが不正な場合
-				if (items.length != 2 || (!items[0].matches("[0-9]{3}"))) {
+				if (items.length != 2 || (!items[0].matches("^[0-9]{3}$"))) {
 					System.out.println(FILE_INVALID_FORMAT);
 					return false;
 				}
@@ -251,4 +264,3 @@ public class CalculateSales {
 	}
 
 }
-
