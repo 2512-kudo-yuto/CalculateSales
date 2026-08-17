@@ -118,6 +118,11 @@ public class CalculateSales {
 					return;
 				}
 
+				if (!saleStr.matches("^[0-9]+$")) {
+					System.out.println(UNKNOWN_ERROR);
+					return;
+				}
+
 				//売上ファイルから読み込んだ売上金額をMapに加算していくために、型の変換を行います。
 				//数字ではない場合のエラー処理
 				long fileSale;
