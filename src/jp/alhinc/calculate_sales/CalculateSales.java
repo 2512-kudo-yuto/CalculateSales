@@ -25,7 +25,7 @@ public class CalculateSales {
 	private static final String FILE_NOT_EXIST = "支店定義ファイルが存在しません";
 	private static final String FILE_INVALID_FORMAT = "支店定義ファイルのフォーマットが不正です";
 	private static final String SALESFILE_NOT_SEQUENTIAL = "売上ファイル名が連番になっていません";
-	private static final String TOTAL_AMOUNT_OVERFROW = "合計金額が10桁を超えました";
+	private static final String TOTAL_AMOUNT_OVERFLOW = "合計金額が10桁を超えました";
 	private static final String CODE_INVALID_FORMAT = "の支店コードが不正です";
 	private static final String SALESFILE_INVALID_FORMAT = "のフォーマットが不正です";
 
@@ -138,7 +138,7 @@ public class CalculateSales {
 
 				// 合計金額が10桁を超えた場合
 				if (saleAmount >= 10000000000L) {
-					System.out.println(TOTAL_AMOUNT_OVERFROW);
+					System.out.println(TOTAL_AMOUNT_OVERFLOW);
 					return;
 				}
 
