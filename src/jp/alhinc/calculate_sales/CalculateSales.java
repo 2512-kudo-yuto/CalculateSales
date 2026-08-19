@@ -163,12 +163,7 @@ public class CalculateSales {
 				Long commodityAmount = commoditySales.get(commodityCode) + fileSale;
 
 				// 合計金額が10桁を超えた場合
-				if (saleAmount >= 10000000000L) {
-					System.out.println(TOTAL_AMOUNT_OVERFLOW);
-					return;
-				}
-
-				if (commodityAmount >= 10000000000L) {
+				if (saleAmount >= 10000000000L || commodityAmount >= 10000000000L) {
 					System.out.println(TOTAL_AMOUNT_OVERFLOW);
 					return;
 				}
